@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D365 F&O DORA Metrics Architecture</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-cyan: #22d3ee;
+            --accent-blue: #3b82f6;
+            --accent-emerald: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-red: #ef4444;
+            --accent-purple: #8b5cf6;
+            --border-color: #334155;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        header .subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        header .meta {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        header .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        header .meta-item svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Navigation */
+        nav {
+            position: sticky;
+            top: 0;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 100;
+            padding: 0 2rem;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 0.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            overflow-x: auto;
+            padding: 0.75rem 0;
+        }
+
+        nav a {
+            display: block;
+            padding: 0.5rem 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 6px;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+
+        nav a.active {
+            color: var(--accent-cyan);
+            background: rgba(34, 211, 238, 0.1);
+        }
+
+        /* Sections */
+        section {
+            padding: 4rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        section:last-child {
+            border-bottom: none;
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        h2 .icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem;
+            color: var(--text-primary);
+        }
+
+        h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.75rem;
+            color: var(--accent-cyan);
+        }
+
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        /* Executive Summary Box */
+        .summary-box {
+            background: linear-gradient(135deg, rgba(34, 211, 238, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+            border: 1px solid rgba(34, 211, 238, 0.3);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-box h3 {
+            color: var(--accent-cyan);
+            margin-top: 0;
+        }
+
+        /* Architecture Diagram */
+        .architecture-diagram {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            overflow-x: auto;
+        }
+
+        .architecture-diagram svg {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+        }
+
+        /* Component Cards */
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .component-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.2s;
+        }
+
+        .component-card:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-2px);
+        }
+
+        .component-card .header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .component-card .color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .component-card h4 {
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        .component-card p {
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .component-card ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .component-card li {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            padding: 0.25rem 0;
+            padding-left: 1.25rem;
+            position: relative;
+        }
+
+        .component-card li::before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: var(--accent-cyan);
+        }
+
+        /* DORA Metrics Table */
+        .metrics-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            font-size: 0.875rem;
+        }
+
+        .metrics-table th,
+        .metrics-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .metrics-table th {
+            background: var(--bg-secondary);
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        .metrics-table td {
+            color: var(--text-secondary);
+        }
+
+        .metrics-table tr:hover td {
+            background: var(--bg-secondary);
+        }
+
+        .tier-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .tier-elite { background: rgba(16, 185, 129, 0.2); color: var(--accent-emerald); }
+        .tier-high { background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); }
+        .tier-medium { background: rgba(245, 158, 11, 0.2); color: var(--accent-amber); }
+        .tier-low { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
+
+        /* Correlation Flow */
+        .correlation-flow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            padding: 2rem;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            margin: 2rem 0;
+            overflow-x: auto;
+        }
+
+        .flow-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 100px;
+        }
+
+        .flow-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--accent-cyan);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .flow-label {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+        }
+
+        .flow-source {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .flow-arrow {
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-cyan), transparent);
+            min-width: 30px;
+        }
+
+        /* Code Blocks */
+        .code-block {
+            background: #0d1117;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .code-header {
+            background: var(--bg-tertiary);
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .code-content {
+            padding: 1rem;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+            line-height: 1.7;
+        }
+
+        .code-content pre {
+            margin: 0;
+            color: #e6edf3;
+        }
+
+        .code-comment { color: #8b949e; }
+        .code-keyword { color: #ff7b72; }
+        .code-string { color: #a5d6ff; }
+        .code-function { color: #d2a8ff; }
+        .code-variable { color: #79c0ff; }
+
+        /* Info Boxes */
+        .info-box {
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin: 1rem 0;
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .info-box.note {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .info-box.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .info-box.tip {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .info-box .icon {
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .info-box .content {
+            flex: 1;
+        }
+
+        .info-box .title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-box.note .title { color: var(--accent-blue); }
+        .info-box.warning .title { color: var(--accent-amber); }
+        .info-box.tip .title { color: var(--accent-emerald); }
+
+        .info-box p {
+            margin: 0;
+            font-size: 0.875rem;
+        }
+
+        /* Cost Table */
+        .cost-table {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 2rem 0;
+        }
+
+        .cost-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .cost-row:last-child {
+            border-bottom: none;
+        }
+
+        .cost-row.total {
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .cost-resource {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .cost-sku {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .cost-amount {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--accent-emerald);
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+            margin: 2rem 0;
+        }
+
+        .timeline::before {
+            content: "";
+            position: absolute;
+            left: 7px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border-color);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 2rem;
+        }
+
+        .timeline-item:last-child {
+            padding-bottom: 0;
+        }
+
+        .timeline-item::before {
+            content: "";
+            position: absolute;
+            left: -2rem;
+            top: 4px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--bg-primary);
+            border: 2px solid var(--accent-cyan);
+        }
+
+        .timeline-phase {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .timeline-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-tasks {
+            list-style: none;
+            padding: 0;
+        }
+
+        .timeline-tasks li {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            padding: 0.25rem 0;
+            padding-left: 1.25rem;
+            position: relative;
+        }
+
+        .timeline-tasks li::before {
+            content: "☐";
+            position: absolute;
+            left: 0;
+            color: var(--text-muted);
+        }
+
+        /* Schema Diagram */
+        .schema-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .schema-table {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .schema-table-header {
+            background: var(--bg-tertiary);
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--accent-purple);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .schema-table-columns {
+            padding: 0.75rem 1rem;
+        }
+
+        .schema-column {
+            font-size: 0.8125rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-secondary);
+            padding: 0.25rem 0;
+        }
+
+        .schema-column .pk {
+            color: var(--accent-amber);
+            font-size: 0.625rem;
+            margin-left: 0.5rem;
+        }
+
+        .schema-column .fk {
+            color: var(--accent-blue);
+            font-size: 0.625rem;
+            margin-left: 0.5rem;
+        }
+
+        /* Two Column Layout */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        footer a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+            
+            nav {
+                display: none;
+            }
+            
+            .component-card,
+            .code-block,
+            .info-box,
+            .cost-table,
+            .schema-table {
+                break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>D365 F&O DORA Metrics Architecture</h1>
+        <p class="subtitle">Automated DevOps intelligence platform for Microsoft Dynamics 365 Finance & Operations with TFVC-based repositories</p>
+        <div class="meta">
+            <div class="meta-item">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                January 2026
+            </div>
+            <div class="meta-item">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                New Balance Technology Consulting
+            </div>
+            <div class="meta-item">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                Version 1.0
+            </div>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#overview" class="active">Overview</a></li>
+            <li><a href="#architecture">Architecture</a></li>
+            <li><a href="#dora-metrics">DORA Metrics</a></li>
+            <li><a href="#correlation">TFVC Correlation</a></li>
+            <li><a href="#components">Components</a></li>
+            <li><a href="#database">Database Schema</a></li>
+            <li><a href="#teams">Teams Integration</a></li>
+            <li><a href="#cost">Cost Estimate</a></li>
+            <li><a href="#roadmap">Roadmap</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <!-- Overview Section -->
+        <section id="overview">
+            <h2><span class="icon">📋</span> Executive Summary</h2>
+            
+            <div class="summary-box">
+                <h3>The Challenge</h3>
+                <p>Implementing DORA metrics for D365 Finance & Operations presents unique challenges because DORA was designed for Git-based CI/CD workflows. D365 F&O environments typically use TFVC repositories, require LCS for deployments, and follow longer release cycles than typical DevOps implementations.</p>
+            </div>
+
+            <h3>Key Challenges Addressed</h3>
+            <div class="component-grid">
+                <div class="component-card">
+                    <div class="header">
+                        <div class="color-dot" style="background: var(--accent-amber)"></div>
+                        <h4>TFVC Correlation</h4>
+                    </div>
+                    <p>No pull requests or merge events to track. Requires explicit changeset → build → deployment tracing.</p>
+                </div>
+                <div class="component-card">
+                    <div class="header">
+                        <div class="color-dot" style="background: var(--accent-blue)"></div>
+                        <h4>LCS API Complexity</h4>
+                    </div>
+                    <p>AAD authentication requirements and limited API surface for deployment history extraction.</p>
+                </div>
+                <div class="component-card">
+                    <div class="header">
+                        <div class="color-dot" style="background: var(--accent-emerald)"></div>
+                        <h4>Multi-Environment Tracking</h4>
+                    </div>
+                    <p>Dev, Test, UAT, and Production environments across multiple LCS projects need unified visibility.</p>
+                </div>
+            </div>
+
+            <div class="info-box tip">
+                <div class="icon">💡</div>
+                <div class="content">
+                    <div class="title">Recommended Strategy</div>
+                    <p>Use <strong>Work Items as the unit of change</strong> rather than individual changesets. A single PBI/Bug may have multiple changesets, and Lead Time should measure from the first changeset linked to a work item until the deployment containing all linked changesets reaches Production.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Architecture Section -->
+        <section id="architecture">
+            <h2><span class="icon">🏗️</span> Architecture Overview</h2>
+            
+            <p>The recommended architecture uses Azure Functions for data collection and DORA calculation, Azure SQL for storage, Logic Apps for Teams notifications, and Power BI for visualization.</p>
+
+            <div class="architecture-diagram">
+                <svg viewBox="0 0 800 500" style="font-family: 'Inter', sans-serif;">
+                    <!-- Background -->
+                    <rect width="800" height="500" fill="#0f172a"/>
+                    
+                    <!-- Data Sources Layer -->
+                    <text x="400" y="30" text-anchor="middle" fill="#64748b" font-size="11" font-weight="600" letter-spacing="0.1em">DATA SOURCES</text>
+                    
+                    <!-- ADO Box -->
+                    <rect x="50" y="50" width="180" height="80" rx="8" fill="#0078d422" stroke="#0078d4" stroke-width="2"/>
+                    <text x="140" y="80" text-anchor="middle" fill="#0078d4" font-weight="600" font-size="13">Azure DevOps</text>
+                    <text x="140" y="100" text-anchor="middle" fill="#64748b" font-size="10">TFVC • Work Items • Builds</text>
+                    <text x="140" y="115" text-anchor="middle" fill="#64748b" font-size="10">Timer: 6 AM / 6 PM</text>
+                    
+                    <!-- LCS Box -->
+                    <rect x="310" y="50" width="180" height="80" rx="8" fill="#10712222" stroke="#107c10" stroke-width="2"/>
+                    <text x="400" y="80" text-anchor="middle" fill="#107c10" font-weight="600" font-size="13">Lifecycle Services</text>
+                    <text x="400" y="100" text-anchor="middle" fill="#64748b" font-size="10">Environments • Deployments</text>
+                    <text x="400" y="115" text-anchor="middle" fill="#64748b" font-size="10">Asset Library • Health</text>
+                    
+                    <!-- D365 Telemetry Box (Future) -->
+                    <rect x="570" y="50" width="180" height="80" rx="8" fill="#94a3b811" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4"/>
+                    <text x="660" y="80" text-anchor="middle" fill="#94a3b8" font-weight="600" font-size="13">D365 Telemetry</text>
+                    <text x="660" y="100" text-anchor="middle" fill="#64748b" font-size="10">Application Insights</text>
+                    <text x="660" y="115" text-anchor="middle" fill="#64748b" font-size="10">(Future Enhancement)</text>
+                    
+                    <!-- Arrows to Functions -->
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/>
+                        </marker>
+                    </defs>
+                    <line x1="140" y1="130" x2="300" y2="180" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)"/>
+                    <line x1="400" y1="130" x2="400" y2="180" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)"/>
+                    <line x1="660" y1="130" x2="500" y2="180" stroke="#64748b" stroke-width="2" stroke-dasharray="4" marker-end="url(#arrowhead)"/>
+                    
+                    <!-- Processing Layer -->
+                    <text x="400" y="170" text-anchor="middle" fill="#64748b" font-size="11" font-weight="600" letter-spacing="0.1em">PROCESSING LAYER</text>
+                    
+                    <!-- Azure Functions Box -->
+                    <rect x="150" y="190" width="500" height="100" rx="8" fill="#ffd70022" stroke="#ffd700" stroke-width="2"/>
+                    <text x="400" y="220" text-anchor="middle" fill="#ffd700" font-weight="600" font-size="14">Azure Functions (Python)</text>
+                    
+                    <!-- Function Components -->
+                    <rect x="170" y="235" width="110" height="40" rx="4" fill="#1e293b" stroke="#334155"/>
+                    <text x="225" y="258" text-anchor="middle" fill="#94a3b8" font-size="10">ADO Collector</text>
+                    
+                    <rect x="295" y="235" width="110" height="40" rx="4" fill="#1e293b" stroke="#334155"/>
+                    <text x="350" y="258" text-anchor="middle" fill="#94a3b8" font-size="10">LCS Collector</text>
+                    
+                    <rect x="420" y="235" width="110" height="40" rx="4" fill="#1e293b" stroke="#334155"/>
+                    <text x="475" y="258" text-anchor="middle" fill="#94a3b8" font-size="10">Correlation Engine</text>
+                    
+                    <rect x="545" y="235" width="90" height="40" rx="4" fill="#1e293b" stroke="#334155"/>
+                    <text x="590" y="258" text-anchor="middle" fill="#94a3b8" font-size="10">DORA Calc</text>
+                    
+                    <!-- Arrow to Storage -->
+                    <line x1="400" y1="290" x2="400" y2="330" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)"/>
+                    
+                    <!-- Storage Layer -->
+                    <text x="400" y="320" text-anchor="middle" fill="#64748b" font-size="11" font-weight="600" letter-spacing="0.1em">DATA STORAGE</text>
+                    
+                    <!-- Azure SQL Box -->
+                    <rect x="200" y="340" width="400" height="60" rx="8" fill="#e8112322" stroke="#e81123" stroke-width="2"/>
+                    <text x="400" y="370" text-anchor="middle" fill="#e81123" font-weight="600" font-size="13">Azure SQL Database</text>
+                    <text x="400" y="387" text-anchor="middle" fill="#64748b" font-size="10">changesets • deployments • correlations • metrics_daily</text>
+                    
+                    <!-- Arrows to Outputs -->
+                    <line x1="300" y1="400" x2="180" y2="440" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)"/>
+                    <line x1="500" y1="400" x2="620" y2="440" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)"/>
+                    
+                    <!-- Output Layer -->
+                    <text x="400" y="435" text-anchor="middle" fill="#64748b" font-size="11" font-weight="600" letter-spacing="0.1em">VISUALIZATION & ALERTS</text>
+                    
+                    <!-- Power BI Box -->
+                    <rect x="50" y="450" width="180" height="40" rx="8" fill="#f2c81122" stroke="#f2c811" stroke-width="2"/>
+                    <text x="140" y="475" text-anchor="middle" fill="#f2c811" font-weight="600" font-size="13">Power BI Dashboard</text>
+                    
+                    <!-- Teams Box -->
+                    <rect x="570" y="450" width="180" height="40" rx="8" fill="#6264a722" stroke="#6264a7" stroke-width="2"/>
+                    <text x="660" y="475" text-anchor="middle" fill="#6264a7" font-weight="600" font-size="13">Teams Notifications</text>
+                </svg>
+            </div>
+
+            <h3>Why This Pattern?</h3>
+            <div class="two-col">
+                <div class="info-box note">
+                    <div class="icon">✅</div>
+                    <div class="content">
+                        <div class="title">Advantages</div>
+                        <p>Code-first approach handles complex TFVC correlation logic. Azure Functions consumption plan keeps costs low (~$50/mo). Full control over data model and calculations.</p>
+                    </div>
+                </div>
+                <div class="info-box warning">
+                    <div class="icon">⚠️</div>
+                    <div class="content">
+                        <div class="title">Alternative Considered: Power Automate</div>
+                        <p>Premium connectors required (~$15/user/mo). Limited ability to handle complex changeset→deployment correlation. Harder to version control.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DORA Metrics Section -->
+        <section id="dora-metrics">
+            <h2><span class="icon">📊</span> DORA Metrics Implementation</h2>
+            
+            <p>The four key DORA metrics adapted for D365 Finance & Operations environments:</p>
+
+            <table class="metrics-table">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>D365 F&O Implementation</th>
+                        <th>Elite</th>
+                        <th>High</th>
+                        <th>Medium</th>
+                        <th>Low</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Deployment Frequency</strong></td>
+                        <td>LCS deployments to Production environment</td>
+                        <td><span class="tier-badge tier-elite">Multiple/day</span></td>
+                        <td><span class="tier-badge tier-high">Daily-Weekly</span></td>
+                        <td><span class="tier-badge tier-medium">Weekly-Monthly</span></td>
+                        <td><span class="tier-badge tier-low">Monthly+</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Lead Time for Changes</strong></td>
+                        <td>Changeset creation → Production deployment</td>
+                        <td><span class="tier-badge tier-elite">&lt; 1 day</span></td>
+                        <td><span class="tier-badge tier-high">&lt; 1 week</span></td>
+                        <td><span class="tier-badge tier-medium">&lt; 1 month</span></td>
+                        <td><span class="tier-badge tier-low">&gt; 1 month</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Change Failure Rate</strong></td>
+                        <td>Failed + rolled-back deploys / total deploys</td>
+                        <td><span class="tier-badge tier-elite">&lt; 15%</span></td>
+                        <td><span class="tier-badge tier-high">&lt; 30%</span></td>
+                        <td><span class="tier-badge tier-medium">&lt; 45%</span></td>
+                        <td><span class="tier-badge tier-low">&gt; 45%</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Mean Time to Recovery</strong></td>
+                        <td>Incident detection → Service restoration</td>
+                        <td><span class="tier-badge tier-elite">&lt; 1 hour</span></td>
+                        <td><span class="tier-badge tier-high">&lt; 1 day</span></td>
+                        <td><span class="tier-badge tier-medium">&lt; 1 week</span></td>
+                        <td><span class="tier-badge tier-low">&gt; 1 week</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="info-box warning">
+                <div class="icon">📝</div>
+                <div class="content">
+                    <div class="title">D365 Reality Check</div>
+                    <p>Most D365 F&O implementations will fall into the Medium or Low tiers for Deployment Frequency due to the platform's testing requirements and release cadence. This is expected and acceptable—the goal is to measure and improve over time, not achieve Elite status on day one.</p>
+                </div>
+            </div>
+
+            <h3>Metric Calculation Examples</h3>
+            
+            <div class="code-block">
+                <div class="code-header">SQL: Deployment Frequency Query</div>
+                <div class="code-content">
+<pre><span class="code-keyword">SELECT</span> 
+    <span class="code-function">DATEPART</span>(week, deployment_date) <span class="code-keyword">AS</span> week_number,
+    <span class="code-function">COUNT</span>(*) <span class="code-keyword">AS</span> deployment_count,
+    <span class="code-keyword">CASE</span> 
+        <span class="code-keyword">WHEN</span> <span class="code-function">COUNT</span>(*) >= <span class="code-string">7</span> <span class="code-keyword">THEN</span> <span class="code-string">'Elite'</span>
+        <span class="code-keyword">WHEN</span> <span class="code-function">COUNT</span>(*) >= <span class="code-string">1</span> <span class="code-keyword">THEN</span> <span class="code-string">'High'</span>
+        <span class="code-keyword">WHEN</span> <span class="code-function">COUNT</span>(*) >= <span class="code-string">0.25</span> <span class="code-keyword">THEN</span> <span class="code-string">'Medium'</span>
+        <span class="code-keyword">ELSE</span> <span class="code-string">'Low'</span>
+    <span class="code-keyword">END AS</span> performance_tier
+<span class="code-keyword">FROM</span> dora.deployments
+<span class="code-keyword">WHERE</span> environment_tier = <span class="code-string">'Production'</span>
+    <span class="code-keyword">AND</span> status = <span class="code-string">'Succeeded'</span>
+    <span class="code-keyword">AND</span> deployment_date >= <span class="code-function">DATEADD</span>(month, -3, <span class="code-function">GETDATE</span>())
+<span class="code-keyword">GROUP BY</span> <span class="code-function">DATEPART</span>(week, deployment_date)</pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Correlation Section -->
+        <section id="correlation">
+            <h2><span class="icon">🔗</span> TFVC Correlation Strategy</h2>
+            
+            <p>Unlike Git-based workflows, TFVC requires explicit correlation through the build pipeline to trace changes to production deployments.</p>
+
+            <div class="correlation-flow">
+                <div class="flow-step">
+                    <div class="flow-icon">📝</div>
+                    <div class="flow-label">Changeset</div>
+                    <div class="flow-source">ADO TFVC</div>
+                </div>
+                <div class="flow-arrow"></div>
+                <div class="flow-step">
+                    <div class="flow-icon">📋</div>
+                    <div class="flow-label">Work Items</div>
+                    <div class="flow-source">ADO Links</div>
+                </div>
+                <div class="flow-arrow"></div>
+                <div class="flow-step">
+                    <div class="flow-icon">🔨</div>
+                    <div class="flow-label">Build</div>
+                    <div class="flow-source">ADO Pipelines</div>
+                </div>
+                <div class="flow-arrow"></div>
+                <div class="flow-step">
+                    <div class="flow-icon">📦</div>
+                    <div class="flow-label">Artifact</div>
+                    <div class="flow-source">Build Output</div>
+                </div>
+                <div class="flow-arrow"></div>
+                <div class="flow-step">
+                    <div class="flow-icon">☁️</div>
+                    <div class="flow-label">LCS Asset</div>
+                    <div class="flow-source">Asset Library</div>
+                </div>
+                <div class="flow-arrow"></div>
+                <div class="flow-step">
+                    <div class="flow-icon">🚀</div>
+                    <div class="flow-label">Deployment</div>
+                    <div class="flow-source">LCS History</div>
+                </div>
+            </div>
+
+            <h3>Correlation Challenges & Solutions</h3>
+            
+            <div class="two-col">
+                <div class="component-card">
+                    <div class="header">
+                        <div class="color-dot" style="background: var(--accent-emerald)"></div>
+                        <h4>What TFVC Provides Natively</h4>
+                    </div>
+                    <ul>
+                        <li>Changeset → Work Item links (associated work items)</li>
+                        <li>Changeset ID in build SourceVersion field</li>
+                        <li>Build artifacts with consistent naming patterns</li>
+                        <li>Build timeline and history</li>
+                    </ul>
+                </div>
+                <div class="component-card">
+                    <div class="header">
+                        <div class="color-dot" style="background: var(--accent-amber)"></div>
+                        <h4>Manual Correlation Required</h4>
+                    </div>
+                    <ul>
+                        <li>Build artifact → LCS Asset Library mapping</li>
+                        <li>Naming convention or metadata tagging strategy</li>
+                        <li>Asset ID → Deployment reference linking</li>
+                        <li>Cross-environment deployment tracking</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Correlation Engine Logic</h3>
+            
+            <div class="code-block">
+                <div class="code-header">Python: Correlation Engine</div>
+                <div class="code-content">
+<pre><span class="code-keyword">async def</span> <span class="code-function">correlate_changeset_to_deployment</span>(
+    <span class="code-variable">self</span>, 
+    changeset_id: <span class="code-variable">int</span>
+) -> Optional[DeploymentCorrelation]:
+    <span class="code-string">"""
+    Trace changeset through the deployment pipeline.
+    
+    Correlation chain:
+    1. Changeset → Work Items (native ADO links)
+    2. Changeset → Build (SourceVersion field)  
+    3. Build → Artifact (deployable package)
+    4. Artifact → LCS Asset (naming convention)
+    5. Asset → Deployment (LCS API)
+    """</span>
+    
+    <span class="code-comment"># Step 1: Get changeset and linked work items</span>
+    changeset = <span class="code-keyword">await</span> <span class="code-variable">self</span>.ado.get_changeset(changeset_id)
+    work_items = <span class="code-keyword">await</span> <span class="code-variable">self</span>.ado.get_changeset_work_items(changeset_id)
+    
+    <span class="code-comment"># Step 2: Find builds containing this changeset</span>
+    builds = <span class="code-keyword">await</span> <span class="code-variable">self</span>.find_builds_with_changeset(changeset_id)
+    
+    <span class="code-keyword">if not</span> builds:
+        <span class="code-keyword">return</span> <span class="code-variable">None</span>
+    
+    <span class="code-comment"># Step 3: Get deployable packages from builds</span>
+    artifacts = []
+    <span class="code-keyword">for</span> build <span class="code-keyword">in</span> builds:
+        build_artifacts = <span class="code-keyword">await</span> <span class="code-variable">self</span>.ado.get_build_artifacts(build.id)
+        artifacts.extend([a <span class="code-keyword">for</span> a <span class="code-keyword">in</span> build_artifacts <span class="code-keyword">if</span> a.name.endswith(<span class="code-string">'.zip'</span>)])
+    
+    <span class="code-comment"># Step 4: Match to LCS assets</span>
+    lcs_assets = <span class="code-keyword">await</span> <span class="code-variable">self</span>.match_artifacts_to_lcs_assets(artifacts)
+    
+    <span class="code-comment"># Step 5: Find deployments using those assets</span>
+    deployments = <span class="code-keyword">await</span> <span class="code-variable">self</span>.lcs.get_deployments_by_assets(lcs_assets)
+    
+    <span class="code-keyword">return</span> DeploymentCorrelation(
+        changeset=changeset,
+        work_items=work_items,
+        builds=builds,
+        assets=lcs_assets,
+        deployments=deployments
+    )</pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Components Section -->
+        <section id="components">
+            <h2><span class="icon">⚙️</span> Component Details</h2>
+
+            <div class="component-grid">
+                <div class="component-card">
+                    <div class="header">
+                        <div class="color-dot" style="background: #0078d4"></div>
+                        <h4>Azure DevOps Client</h4>
+                    </div>
+                    <p>Collects TFVC changesets, work items, and build data from Azure DevOps REST APIs.</p>
+                    <ul>
+                        <li>GET /_apis/tfvc/changesets</li>
+                        <li>GET /_apis/wit/workitems</li>
+                        <li>GET /_apis/build/builds</li>
+                        <li>GET /_apis/build/builds/{id}/artifacts</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <div class="header">
+                        <div class="color-dot" style="background: #107c10"></div>
+                        <h4>LCS API Client</h4>
+                    </div>
+                    <p>Collects deployment history and environment status from Lifecycle Services.</p>
+                    <ul>
+                        <li>GET /api/environments/v1/{projectId}</li>
+                        <li>GET /api/deploymenthistory/v1/{projectId}/{envId}</li>
+                        <li>GET /api/assetlibrary/v1/{projectId}</li>
+                        <li>AAD OAuth2 authentication required</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <div class="header">
+                        <div class="color-dot" style="background: #ffd700"></div>
+                        <h4>Azure Functions</h4>
+                    </div>
+                    <p>Python-based data collection running on consumption plan with timer triggers.</p>
+                    <ul>
+                        <li>ADO Collector - Changesets, WIs, Builds</li>
+                        <li>LCS Collector - Deployments, Environments</li>
+                        <li>Correlation Engine - Links CS→Build→Deploy</li>
+                        <li>DORA Calculator - Metrics computation</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <div class="header">
+                        <div class="color-dot" style="background: #e81123"></div>
+                        <h4>Azure SQL Database</h4>
+                    </div>
+                    <p>Central storage for all metrics, correlations, and historical data.</p>
+                    <ul>
+                        <li>dora.changesets - TFVC check-ins</li>
+                        <li>dora.deployments - LCS deployment history</li>
+                        <li>dora.correlations - CS→Deploy links</li>
+                        <li>dora.metrics_daily - Pre-calculated DORA</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <div class="header">
+                        <div class="color-dot" style="background: #f2c811"></div>
+                        <h4>Power BI Dashboard</h4>
+                    </div>
+                    <p>Single pane of glass for DORA metrics and environment status visualization.</p>
+                    <ul>
+                        <li>DORA Metrics Overview</li>
+                        <li>Deployment Frequency Trends</li>
+                        <li>Lead Time Distribution</li>
+                        <li>Environment Health Matrix</li>
+                        <li>Drill-through to Changesets</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <div class="header">
+                        <div class="color-dot" style="background: #6264a7"></div>
+                        <h4>Teams Notifications</h4>
+                    </div>
+                    <p>Proactive alerts via Logic Apps using Adaptive Cards.</p>
+                    <ul>
+                        <li>Daily DORA summary (scheduled)</li>
+                        <li>Deployment failure alerts</li>
+                        <li>DORA tier degradation warnings</li>
+                        <li>Environment health changes</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Database Schema Section -->
+        <section id="database">
+            <h2><span class="icon">🗄️</span> Database Schema</h2>
+            
+            <p>Azure SQL Database schema for storing metrics, correlations, and historical data.</p>
+
+            <div class="schema-grid">
+                <div class="schema-table">
+                    <div class="schema-table-header">dora.changesets</div>
+                    <div class="schema-table-columns">
+                        <div class="schema-column">id <span class="pk">PK</span></div>
+                        <div class="schema-column">changeset_id</div>
+                        <div class="schema-column">author</div>
+                        <div class="schema-column">comment</div>
+                        <div class="schema-column">created_date</div>
+                        <div class="schema-column">tfvc_path</div>
+                    </div>
+                </div>
+
+                <div class="schema-table">
+                    <div class="schema-table-header">dora.work_items</div>
+                    <div class="schema-table-columns">
+                        <div class="schema-column">id <span class="pk">PK</span></div>
+                        <div class="schema-column">work_item_id</div>
+                        <div class="schema-column">work_item_type</div>
+                        <div class="schema-column">title</div>
+                        <div class="schema-column">state</div>
+                        <div class="schema-column">area_path</div>
+                    </div>
+                </div>
+
+                <div class="schema-table">
+                    <div class="schema-table-header">dora.builds</div>
+                    <div class="schema-table-columns">
+                        <div class="schema-column">id <span class="pk">PK</span></div>
+                        <div class="schema-column">build_id</div>
+                        <div class="schema-column">build_number</div>
+                        <div class="schema-column">source_version</div>
+                        <div class="schema-column">status</div>
+                        <div class="schema-column">finish_time</div>
+                    </div>
+                </div>
+
+                <div class="schema-table">
+                    <div class="schema-table-header">dora.deployments</div>
+                    <div class="schema-table-columns">
+                        <div class="schema-column">id <span class="pk">PK</span></div>
+                        <div class="schema-column">environment_id <span class="fk">FK</span></div>
+                        <div class="schema-column">asset_id</div>
+                        <div class="schema-column">status</div>
+                        <div class="schema-column">started_at</div>
+                        <div class="schema-column">completed_at</div>
+                    </div>
+                </div>
+
+                <div class="schema-table">
+                    <div class="schema-table-header">dora.correlations</div>
+                    <div class="schema-table-columns">
+                        <div class="schema-column">id <span class="pk">PK</span></div>
+                        <div class="schema-column">changeset_id</div>
+                        <div class="schema-column">build_id</div>
+                        <div class="schema-column">deployment_id <span class="fk">FK</span></div>
+                        <div class="schema-column">lead_time_hours</div>
+                        <div class="schema-column">correlation_method</div>
+                    </div>
+                </div>
+
+                <div class="schema-table">
+                    <div class="schema-table-header">dora.metrics_daily</div>
+                    <div class="schema-table-columns">
+                        <div class="schema-column">id <span class="pk">PK</span></div>
+                        <div class="schema-column">metric_date</div>
+                        <div class="schema-column">deployment_count</div>
+                        <div class="schema-column">lead_time_median_hours</div>
+                        <div class="schema-column">change_failure_rate_pct</div>
+                        <div class="schema-column">overall_tier</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Teams Integration Section -->
+        <section id="teams">
+            <h2><span class="icon">💬</span> Teams Integration</h2>
+            
+            <p>Logic Apps orchestrates notifications to Teams channels using Adaptive Cards for rich formatting.</p>
+
+            <h3>Notification Triggers</h3>
+            <div class="component-grid">
+                <div class="component-card">
+                    <div class="header">
+                        <div class="color-dot" style="background: var(--accent-blue)"></div>
+                        <h4>Scheduled Daily Summary</h4>
+                    </div>
+                    <p>Daily digest of DORA metrics sent at 9 AM to the DevOps channel.</p>
+                </div>
+                <div class="component-card">
+                    <div class="header">
+                        <div class="color-dot" style="background: var(--accent-red)"></div>
+                        <h4>Deployment Failure Alert</h4>
+                    </div>
+                    <p>Immediate notification when a production deployment fails.</p>
+                </div>
+                <div class="component-card">
+                    <div class="header">
+                        <div class="color-dot" style="background: var(--accent-amber)"></div>
+                        <h4>Tier Degradation Warning</h4>
+                    </div>
+                    <p>Alert when DORA tier drops from previous measurement period.</p>
+                </div>
+            </div>
+
+            <h3>Adaptive Card Preview</h3>
+            <div style="background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; max-width: 450px; margin: 1rem 0;">
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
+                    <div style="width: 40px; height: 40px; background: var(--accent-cyan); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">📊</div>
+                    <div>
+                        <div style="font-weight: 600; color: var(--text-primary);">D365 F&O DORA Metrics</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Daily Summary • Jan 22, 2026</div>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+                    <div style="background: var(--bg-tertiary); padding: 0.75rem; border-radius: 6px;">
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Deployment Frequency</div>
+                        <div style="font-size: 1.125rem; font-weight: 600; color: var(--accent-amber);">0.5/week</div>
+                    </div>
+                    <div style="background: var(--bg-tertiary); padding: 0.75rem; border-radius: 6px;">
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Lead Time</div>
+                        <div style="font-size: 1.125rem; font-weight: 600; color: var(--accent-blue);">5.2 days</div>
+                    </div>
+                    <div style="background: var(--bg-tertiary); padding: 0.75rem; border-radius: 6px;">
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Change Failure Rate</div>
+                        <div style="font-size: 1.125rem; font-weight: 600; color: var(--accent-emerald);">8%</div>
+                    </div>
+                    <div style="background: var(--bg-tertiary); padding: 0.75rem; border-radius: 6px;">
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">MTTR</div>
+                        <div style="font-size: 1.125rem; font-weight: 600; color: var(--accent-blue);">4.5 hrs</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button style="flex: 1; padding: 0.5rem; background: var(--accent-cyan); color: var(--bg-primary); border: none; border-radius: 4px; font-weight: 600; font-size: 0.875rem; cursor: pointer;">View Dashboard</button>
+                    <button style="flex: 1; padding: 0.5rem; background: var(--bg-tertiary); color: var(--text-secondary); border: none; border-radius: 4px; font-weight: 600; font-size: 0.875rem; cursor: pointer;">Open LCS</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cost Section -->
+        <section id="cost">
+            <h2><span class="icon">💰</span> Cost Estimate</h2>
+            
+            <p>Estimated monthly Azure costs for the DORA metrics platform:</p>
+
+            <div class="cost-table">
+                <div class="cost-row">
+                    <div>
+                        <div class="cost-resource">Azure Functions</div>
+                        <div class="cost-sku">Consumption (Y1) • Twice-daily execution</div>
+                    </div>
+                    <div class="cost-amount">$20</div>
+                </div>
+                <div class="cost-row">
+                    <div>
+                        <div class="cost-resource">Azure SQL Database</div>
+                        <div class="cost-sku">Basic (5 DTU) • 2 GB storage</div>
+                    </div>
+                    <div class="cost-amount">$5</div>
+                </div>
+                <div class="cost-row">
+                    <div>
+                        <div class="cost-resource">Logic Apps</div>
+                        <div class="cost-sku">Consumption • Teams notifications</div>
+                    </div>
+                    <div class="cost-amount">$10</div>
+                </div>
+                <div class="cost-row">
+                    <div>
+                        <div class="cost-resource">Key Vault</div>
+                        <div class="cost-sku">Standard • Secrets storage</div>
+                    </div>
+                    <div class="cost-amount">$1</div>
+                </div>
+                <div class="cost-row">
+                    <div>
+                        <div class="cost-resource">Application Insights</div>
+                        <div class="cost-sku">Basic • Monitoring & diagnostics</div>
+                    </div>
+                    <div class="cost-amount">$5</div>
+                </div>
+                <div class="cost-row">
+                    <div>
+                        <div class="cost-resource">Power BI Pro</div>
+                        <div class="cost-sku">Per user • Dashboard viewers</div>
+                    </div>
+                    <div class="cost-amount">$10/user</div>
+                </div>
+                <div class="cost-row total">
+                    <div>
+                        <div class="cost-resource">Total Estimated (Infrastructure)</div>
+                        <div class="cost-sku">Excludes Power BI user licensing</div>
+                    </div>
+                    <div class="cost-amount">~$51/mo</div>
+                </div>
+            </div>
+
+            <div class="info-box note">
+                <div class="icon">📌</div>
+                <div class="content">
+                    <div class="title">Cost Notes</div>
+                    <p>Costs are estimates based on Azure US pricing. Actual costs may vary based on data volume, execution frequency, and region. Power BI Pro licenses are required for each dashboard viewer beyond the creator.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Roadmap Section -->
+        <section id="roadmap">
+            <h2><span class="icon">🗺️</span> Implementation Roadmap</h2>
+            
+            <p>Recommended 10-week implementation plan:</p>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-phase">Phase 1: Weeks 1-2</div>
+                    <div class="timeline-title">Foundation</div>
+                    <ul class="timeline-tasks">
+                        <li>Provision Azure infrastructure (Terraform)</li>
+                        <li>Set up ADO and LCS API authentication</li>
+                        <li>Create database schema</li>
+                        <li>Implement ADO collector function</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-phase">Phase 2: Weeks 3-4</div>
+                    <div class="timeline-title">LCS Integration</div>
+                    <ul class="timeline-tasks">
+                        <li>Implement LCS collector function</li>
+                        <li>Build correlation engine</li>
+                        <li>Test TFVC → Deployment traceability</li>
+                        <li>Validate data quality</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-phase">Phase 3: Weeks 5-6</div>
+                    <div class="timeline-title">DORA Calculation</div>
+                    <ul class="timeline-tasks">
+                        <li>Implement DORA calculation engine</li>
+                        <li>Create daily metrics aggregation</li>
+                        <li>Validate against manual calculations</li>
+                        <li>Performance optimization</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-phase">Phase 4: Weeks 7-8</div>
+                    <div class="timeline-title">Visualization</div>
+                    <ul class="timeline-tasks">
+                        <li>Build Power BI data model</li>
+                        <li>Create DORA dashboard</li>
+                        <li>Implement Teams notifications via Logic Apps</li>
+                        <li>Configure alerting thresholds</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-phase">Phase 5: Weeks 9-10</div>
+                    <div class="timeline-title">Refinement</div>
+                    <ul class="timeline-tasks">
+                        <li>Historical trend analysis</li>
+                        <li>Documentation and training</li>
+                        <li>Stakeholder review and feedback</li>
+                        <li>Production deployment</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>D365 F&O DORA Metrics Architecture • New Balance Technology Consulting</p>
+        <p style="margin-top: 0.5rem;">Version 1.0 • January 2026</p>
+    </footer>
+
+    <script>
+        // Smooth scroll for navigation
+        document.querySelectorAll('nav a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                // Update active state
+                document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Update active nav on scroll
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('nav a');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 100;
+                if (scrollY >= sectionTop) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
